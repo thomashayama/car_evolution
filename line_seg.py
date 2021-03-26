@@ -58,6 +58,10 @@ def seg_intersection(l1, l2):
     return np.array([x, y])
 
 
+def seg_show(gameDisplay, seg, color=(255, 100, 100)):
+    pygame.draw.line(gameDisplay, color, (seg[0, 0], seg[0, 1]),
+                     (seg[1, 0], seg[1, 1]))
+
 class Line_seg:
     def __init__(self, *args):
         if len(args) == 2 and isinstance(args[0], Vector2d) and isinstance(args[1], Vector2d):
