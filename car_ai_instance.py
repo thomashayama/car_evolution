@@ -1,10 +1,11 @@
 from line_seg import Line_seg
-from vector import Vector2d
-from car import Car
+from vector import *
+from car import *
 import math
 import torch
 import torch.nn as nn
 import numpy as np
+from numba import njit
 
 class Net(nn.Module):
     def __init__(self):
@@ -23,6 +24,16 @@ class Net(nn.Module):
         x = self.sigmoid(x) * 2 - 1
         return x
 
+def model_init():
+    return np.random.randn(11, 6), np.random.randn(6, 2)
+
+def forward(l1, l2, x):
+    y = np.dot(x, l1)
+    y = np.maximum(y, 0)
+    y = np.dot(y, l2)
+    y = 1/(np.exp(-y)+1)
+    return y
+
 gray = (100, 100, 100)
 white = (255, 255, 255)
 black = (0, 0, 0)
@@ -34,7 +45,7 @@ car_length = 40
 base_acc = 200
 
 class car_ai_instance:
-    def __init__(self, pos=Vector2d(100, 100), angle=0):
+    def __init__(self, pos=np.array([100.0, 100.0]), angle=0.0):
         self.key_pressed = {
             'right': False,
             'left': False,
@@ -43,7 +54,7 @@ class car_ai_instance:
             'space': False
         }
 
-        self.car = Car(pos, car_length, car_width, angle=angle)
+        self.car = init_car(pos, car_length, car_width, angle)
         self.brain = Net()
         self.score = 0
         self.curr_goal = 0
@@ -54,43 +65,34 @@ class car_ai_instance:
     def think(self):
         with torch.no_grad():
             decisions = self.brain(torch.tensor(
-                np.append(self.car.last_seen,
-                          [math.cos(self.car.angle / 180 * math.pi),
-                           math.sin(self.car.angle / 180 * math.pi),
-                           self.car.vel.mag()])).float())
-            #self.pedal = max(min(decisions[0]-.5, 5), -.5)
-            #self.steer = max(min(decisions[1]-.5, 1), -1)
+                np.append(car_sensors(self.car),
+                          [math.cos(car_angle(self.car) / 180 * math.pi),
+                           math.sin(car_angle(self.car) / 180 * math.pi),
+                           mag(car_vel(self.car))])).float())
             self.pedal = decisions[0].numpy()
             self.steer = decisions[1].numpy()
 
-        self.car.ang_vel = self.steer
-        '''
-        if self.key_pressed['up']:
-            self.car.vel.x = speed * math.cos(self.car.angle / 180 * math.pi)
-            self.car.vel.y = speed * math.sin(self.car.angle / 180 * math.pi)
-        elif self.key_pressed['down']:
-            self.car.vel.x = -speed * math.cos(self.car.angle / 180 * math.pi)
-            self.car.vel.y = -speed * math.sin(self.car.angle / 180 * math.pi)
-        else:
-            self.car.vel.x = 0
-            self.car.vel.y = 0'''
+        set_car_ang_vel(self.car, self.steer)
+        new_acc = np.array([base_acc * math.cos(car_angle(self.car) / 180 * math.pi) * self.pedal,
+                            base_acc * math.sin(car_angle(self.car) / 180 * math.pi) * self.pedal])
 
-        self.car.acc.x = base_acc * math.cos(self.car.angle / 180 * math.pi) * self.pedal
-        self.car.acc.y = base_acc * math.sin(self.car.angle / 180 * math.pi) * self.pedal
+        set_car_acc(self.car, new_acc)
 
     def tick(self, dt, gameDisplay, road, goals, show=True):
-        if self.car.is_done == False:
+        if car_is_done(self.car) == 0.0:
             self.score += dt
             self.since_goal += dt
-            self.score += dt * self.car.vel.mag() * .1
+            self.score += dt * mag(car_vel(self.car)) * .1
             self.think()
 
             goal = goals[self.curr_goal % len(goals)]
-            if self.car.tick(dt, gameDisplay, road, goal, show=show, color=self.color):
+            if car_tick(dt, self.car, 200, 2, road, goal):
                 self.curr_goal += 1
                 self.score += 250 * self.curr_goal
                 self.since_goal = 0.0
 
             if self.since_goal > 3:
-                self.car.is_done = True
+                set_car_is_done(self.car, 1.0)
+        if show:
+            car_show(gameDisplay, self.car)
 

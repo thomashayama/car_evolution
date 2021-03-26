@@ -1,7 +1,6 @@
 import pygame
-import math
 import roads_np as roads
-from car_ai_instance_numba import *
+from car_ai_instance import *
 from car_ai_numba_utils import *
 import random
 import numpy as np

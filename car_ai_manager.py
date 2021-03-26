@@ -1,7 +1,7 @@
 import pygame
-import math
-import roads
-from car_ai_instance import car_ai_instance
+import roads_np as roads
+from car_ai_instance import *
+from car_ai_numba_utils import *
 import random
 import numpy as np
 import torch
@@ -10,27 +10,6 @@ import datetime
 import os
 
 pygame.init()
-
-class dataloader:
-    def __init__(self, data, flip_every=-1):
-        self.flip_every = flip_every
-        self.data = data
-        self.counter = 0
-        self.curr_data = 0
-
-    def step(self):
-        self.counter += 1
-        if self.counter >= self.flip_every:
-            self.counter = 0
-            self.curr_data = (self.curr_data + 1) % len(self.data)
-
-    def get_data(self):
-        return self.data[self.curr_data]
-
-def mutate(brain, mutation_r):
-    with torch.no_grad():
-        for param in brain.parameters():
-            param.add_(torch.randn(param.size()) * mutation_r)
 
 def reproduce(p1, p2, data):
     new_dict = {}
@@ -51,65 +30,9 @@ def reproduce(p1, p2, data):
     ret.brain.load_state_dict(new_dict)
     return ret
 
-def load(fname, gen_size, new_random, data):
-    load_brain = torch.load(fname)['model']
-    p1 = car_ai_instance(pos=data.get_data().pos, angle=data.get_data().angle)
-    p2 = car_ai_instance(pos=data.get_data().pos, angle=data.get_data().angle)
-    p1.brain.load_state_dict(load_brain.state_dict().copy())
-    p2.brain.load_state_dict(load_brain.state_dict().copy())
-    agents = [p1] * gen_size
-    for i in range(10):
-        agents[i] = p1
-
-    # Generate new generation
-    for i in range(10, gen_size - 11 - new_random):
-        agents[i] = reproduce(p1, p2, data)
-
-    for i in range(gen_size - 11 - new_random, gen_size - 1):
-        agents[i] = car_ai_instance(pos=data.get_data().pos, angle=data.get_data().angle)
-    return agents
-
-def get_time():
-    tm = time.gmtime(time.time())
-    ans = ''
-    for elem in tm:
-        ans += str(elem) + '-'
-    return '-'.join(ans.split('-')[0:-4])
-
 def new_gen(agents):
     global best_brain, data
 
-    '''
-    resolution = .1
-    choice_lst = np.array([])
-    tot_score = np.array([agent.score for agent in agents]).sum()
-
-    best = car_ai_instance(pos=data.get_data().pos, angle=data.get_data().angle)
-    for agent in agents:
-        choice_lst = np.append(choice_lst, [agent]*int(100*agent.score/tot_score/resolution))
-        if best.score < agent.score:
-            best = agent
-
-    if best.score > best_brain[1]:
-        best_brain = (best.brain, best.score)
-
-    bestcar = car_ai_instance(pos=data.get_data().pos, angle=data.get_data().angle)
-    bestcar.brain = best.brain
-    bestcar.color = green
-    print(best.score)
-
-    new_agents = [bestcar] * gen_size
-    for i in range(10):
-        new_agents[i] = reproduce(best, best, data)
-
-    for i in range(10, gen_size - 11 - new_random):
-        parent1 = random.choice(choice_lst)
-        parent2 = random.choice(choice_lst)
-        new_agents[i] = reproduce(parent1, parent2, data)
-
-    for i in range(gen_size - 11 - new_random, gen_size - 1):
-        new_agents[i] = car_ai_instance(pos=data.get_data().pos, angle=data.get_data().angle)
-    '''
     agents.sort(key=lambda x: x.score, reverse=True)
     best_brain = [agents[0].brain, agents[0].score]
     new_agents = []
@@ -131,7 +54,7 @@ if __name__== "__main__":
     display_width = 800
     display_height = 600
     gen_size = 100
-    batch_size = 20
+    batch_size = 100
     new_random = 10
     mutation_r = .1
     max_run_time = 50
@@ -162,11 +85,8 @@ if __name__== "__main__":
     best_brain = (car_ai_instance().brain, 0.0)
 
     data = dataloader([roads.road2, roads.road3], 50)
-    agents = [car_ai_instance(pos=data.get_data().pos, angle=data.get_data().angle) for i in range(gen_size)]
-    #agents = load('brains/car_30503.496.pt', gen_size, new_random, data)
-
-    road = data.get_data().data
-    goals = data.get_data().goals
+    #agents = [car_ai_instance(pos=data.get_data().pos, angle=data.get_data().angle) for i in range(gen_size)]
+    agents = load('brains/gen45s-1238393', gen_size, new_random, data, mutation_r=.1)
 
     key_pressed = {
         'right': False,
@@ -194,13 +114,13 @@ if __name__== "__main__":
 
         all_dead = True
         for agent in agents[batch_floor:batch_roof]:
-            agent.tick(clock.get_time()/1000, gameDisplay, road, goals, show=True)
-            if agent.car.is_done == False:
+            agent.tick(clock.get_time()/1000, gameDisplay, data.get_data().data, data.get_data().goals, show=True)
+            if car_is_done(agent.car) == 0.0:
                 all_dead = False
-        for seg in road:
-            seg.show(gameDisplay, white)
-        for goal in goals:
-            goal.show(gameDisplay, green)
+        for seg in data.get_data().data:
+            seg_show(gameDisplay, seg, white)
+        for goal in data.get_data().goals:
+            seg_show(gameDisplay, goal, green)
 
         running_time += clock.get_time()/1000
         if all_dead or running_time >= max_run_time:
@@ -223,9 +143,9 @@ if __name__== "__main__":
 
 
         text1 = font.render('Simulating gen ' + str(gen), True, white)
-        text2 = font.render('Showing gen ' + str(gen), True, white)
+        #text2 = font.render('Showing gen ' + str(gen), True, white)
         gameDisplay.blit(text1, (1, 1))
-        gameDisplay.blit(text2, (1, 16))
+        #gameDisplay.blit(text2, (1, 16))
 
         pygame.display.update()
         clock.tick(fps)
