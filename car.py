@@ -238,7 +238,7 @@ class Car:
         self.pos = self.pos + self.vel * dt
         self.vel = Vector2d(self.vel.x + dt * (self.acc.x - self.drag_coef * self.vel.x - 20*np.sign(self.vel.x)),
                             self.vel.y + dt * (self.acc.y - self.drag_coef * self.vel.y - 20*np.sign(self.vel.y)))
-        #self.vel = self.vel + self.acc * dt
+
         norm = self.vel.mag()
 
         if norm == 0:
@@ -267,9 +267,7 @@ class Car:
         #sensor_anchors = np.append(sensor_anchors, Line_seg(segs[0].midpoint(), segs[0].p2).midpoint())
 
         hits, dists = self.get_hits(sensor_anchors, road)
-        #self.last_seen = [hit.mag()/self.length for hit in hits]
         self.last_seen = dists/self.length
-        #print(self.last_seen)
         #for hit in hits:
         #    pygame.draw.circle(gameDisplay, (0, 0, 0), (int(hit.x), int(hit.y)), 5, 5)
         if show:

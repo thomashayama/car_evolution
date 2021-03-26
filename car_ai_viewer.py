@@ -1,7 +1,7 @@
 import pygame
 import math
 import roads
-from car_ai_instance import car_ai_instance
+from car_ai_instance import *
 import random
 import numpy as np
 import torch
