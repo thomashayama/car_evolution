@@ -6,85 +6,288 @@ from vector import *
 import numpy as np
 from numba import njit
 
-# car stored as [posx, posy, velx, vely, accx, accy, angle, ang_vel, length, width, sensors...]
 @njit
 def init_car(center, length, width, angle):
+    """Creates a vector that stores car info
+    Initializes velocities, accelerations, and sensor values to 0.0
+    Stored as:
+    [posx,
+    posy,
+    velx,
+    vely,
+    accx,
+    accy,
+    angle,
+    ang_vel,
+    length,
+    width,
+    sensor1,
+    sensor2,
+    ...
+    sensor8]
+
+    Parameters
+    ----------
+    center : ndarray
+        A vector of the position of the car in the form [x, y]
+    length : float
+        The length of the car
+    width : float
+        The width of the car
+    angle : float
+        The angle of the car in degrees
+    Returns
+    -------
+    ndarray
+        The car vector"""
     return np.array([center[0], center[1], 0.0, 0.0, 0.0, 0.0, angle, 0.0, length, width, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
 @njit
 def car_pos(car):
+    """Returns the ndarray position ([x, y]) of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    Returns
+    -------
+    ndarray
+        position in the form [x, y]"""
     return car[0:2]
 
 @njit
 def car_vel(car):
+    """Returns the ndarray velocity ([vx, vy]) of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    Returns
+    -------
+    ndarray
+        velocity in the form [vx, vy]"""
     return car[2:4]
 
 @njit
 def car_acc(car):
+    """Returns the ndarray acceleration ([ax, ay]) of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    Returns
+    -------
+    ndarray
+        acceleration in the form [ax, ay]"""
     return car[4:6]
 
 @njit
 def car_angle(car):
+    """Returns the angle of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    Returns
+    -------
+    float
+        angle of the car in degrees"""
     return car[6]
 
 @njit
 def car_ang_vel(car):
+    """Returns the angular velocity of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    Returns
+    -------
+    float
+        angular velocity of the car"""
     return car[7]
 
 @njit
 def car_length(car):
+    """Returns the length of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    Returns
+    -------
+    float
+        length of the car"""
     return car[8]
 
 @njit
 def car_width(car):
+    """Returns the width of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    Returns
+    -------
+    float
+        width of the car"""
     return car[9]
 
 @njit
 def car_is_done(car):
+    """Returns the status of a car (0.0 or 1.0)
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    Returns
+    -------
+    float
+        car's is_done status (0.0 or 1.0"""
     return car[10]
 
 @njit
 def car_sensors(car):
+    """Returns the sensor values of a car as an ndarray
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    Returns
+    -------
+    ndarray
+        sensor values of the car"""
     return car[11:]
 
 @njit
 def set_car_pos(car, pos):
+    """Sets the ndarray position ([x, y]) of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    pos : ndarray
+        position in the form [x, y]"""
     car[0:2] = pos
 
 @njit
 def set_car_vel(car, vel):
+    """Sets the ndarray velocity ([vx, vy]) of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    vel : ndarray
+        velocity in the form [vx, vy]"""
     car[2:4] = vel
 
 @njit
 def set_car_acc(car, acc):
+    """Sets the ndarray acceleration ([ax, ay]) of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    acc : ndarray
+        acceleration in the form [ax, ay]"""
     car[4:6] = acc
 
 @njit
 def set_car_angle(car, angle):
+    """Sets the angle of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    angle : float
+        angle of the car"""
     car[6] = angle
 
 
 def set_car_ang_vel(car, ang_vel):
+    """Sets the angular velocity of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    ang_vel : float
+        angular velocity of the car"""
     car[7] = ang_vel
 
 @njit
 def set_car_length(car, length):
+    """Sets the ndarray position ([x, y]) of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    length : float
+        length of the car"""
     car[8] = length
 
 @njit
 def set_car_width(car, width):
+    """Sets the ndarray position ([x, y]) of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    width : float
+        width of the car"""
     car[9] = width
 
 @njit
 def set_car_is_done(car, is_done):
+    """Sets the is_done value of a car (0.0 or 1.0)
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    is_done : float
+        is_done value of the car"""
     car[10] = is_done
 
 @njit
 def set_car_sensors(car, sensors):
+    """Sets the sensor values of a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    sensors : ndarray
+        sensor values as an array"""
     car[11:] = sensors
 
 @njit
 def car_get_points(car):
+    """Returns the 4 corners of a car as a 4x2 ndarray
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    Returns
+    -------
+    ndarray
+        4 corners of a car as 4x[x, y]"""
     l = car_length(car)/2
     w = car_width(car)/2
     pos = car_pos(car)
@@ -98,6 +301,20 @@ def car_get_points(car):
 
 @njit
 def car_get_sensors(car, segs, points):
+    """Returns sensor vectors for a car
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    segs : ndarray
+        Segments of the car
+    points : ndarray
+        4 corners of the car
+    Returns
+    -------
+    ndarray
+        8 sensor line segments (8x2x2)"""
     anchors = np.zeros((8, 2))
     for i in range(4):
         anchors[i*2, :] = seg_midpoint(segs[i])
@@ -111,6 +328,22 @@ def car_get_sensors(car, segs, points):
 
 @njit
 def car_get_hits(car, sensors, road):
+    """Returns sensor values for the provided sensor vectors. Gives distance
+    in car lengths from nearest road in sensor's direction
+
+    Parameters
+    ----------
+    car : ndarray
+        A car vector
+    sensors : ndarray
+        Sensor line segments (8x2x2)
+    road : ndarray
+        An array of the road's line segments (nx2x2)
+
+    Returns
+    -------
+    ndarray
+        Sensor values"""
     hits = np.zeros(len(sensors))
     for i in range(len(sensors)):
         short_dist = car_length(car) * 10
@@ -124,8 +357,31 @@ def car_get_hits(car, sensors, road):
         hits[i] = short_dist
     return hits
 
-@njit
+# parallel time: 2711.66 seconds
+# normal: 761.54 seconds
+@njit()
 def car_tick(dt, car, max_vel, drag_coef, road, barrier):
+    """Simulates a car for a timestep
+
+    Parameters
+    ----------
+    dt : float
+        The timestep
+    car : ndarray
+        A car vector
+    max_vel : float
+        maximum velocity of the car
+    drag_coef : float
+        The drag coefficient of the car
+    road : ndarray
+        An array of the road's line segments (nx2x2)
+    barrier : ndarray
+        A line segment, 2x2
+
+    Returns
+    -------
+    boolean
+        Whether or not the car is colliding with barrier"""
     set_car_pos(car, car_pos(car) + car_vel(car) * dt)
     set_car_vel(car, car_vel(car) + dt * (car_acc(car) - drag_coef * car_vel(car) - 20 * np.sign(car_vel(car))))
 
@@ -162,20 +418,6 @@ def car_tick(dt, car, max_vel, drag_coef, road, barrier):
             return True
 
     return False
-
-def car_show(gameDisplay, car):
-    points = car_get_points(car)
-
-    segs = np.zeros((4, 2, 2))
-    segs[0] = points[0:2]
-    segs[1] = points[1:3]
-    segs[2] = points[2:4]
-    segs[3, 0] = points[3]
-    segs[3, 1] = points[0]
-
-    for i in range(4):
-        pygame.draw.line(gameDisplay, (255, 100, 100), (segs[i][0, 0], segs[i][0, 1]),(segs[i][1, 0], segs[i][1, 1]))
-
 
 gray = (100, 100, 100)
 white = (255, 255, 255)

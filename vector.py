@@ -1,14 +1,38 @@
 import math
-import pygame
+#import pygame
 from numba import njit, float64
 import numpy as np
 
 @njit()
 def init_vector(a, b):
+    """Initializes a numpy vector
+
+    Parameters
+    ----------
+    a : float
+        first value of vector
+    b : float
+        second value of vector
+    Returns
+    -------
+    ndarray
+        numpy vector [a, b]"""
     return np.array([a, b])
 
 @njit(float64[:](float64[:], float64[:], float64))
 def rot(vec, cvec, angle):
+    """Rotates a point about another point
+
+    Parameters
+    ----------
+    vec : ndarray
+        point to rotate [x, y]
+    cvec : ndarray
+        point to rotate about [x, y]
+    Returns
+    -------
+    ndarray
+        numpy vector vec after being rotated by angle about cvec"""
     new_x = (vec[0] - cvec[0]) * math.cos(angle / 180 * math.pi) - (
             vec[1] - cvec[1]) * math.sin(angle / 180 * math.pi) + cvec[0]
     new_y = (vec[0] - cvec[0]) * math.sin(angle / 180 * math.pi) + (
@@ -17,6 +41,16 @@ def rot(vec, cvec, angle):
 
 @njit(float64(float64[:]))
 def angle(vec):
+    """Determines the angle of the vector
+
+    Parameters
+    ----------
+    vec : ndarray
+        vector [x, y]
+    Returns
+    -------
+    float
+        Angle of vector"""
     if vec[0] == 0:
         return 90 * vec[1] / abs(vec[1])
     angl = math.atan(vec[1] / vec[0]) / math.pi * 180
@@ -26,6 +60,16 @@ def angle(vec):
 
 @njit
 def mag(vec):
+    """Determines magnitude of numpy vector
+
+    Parameters
+    ----------
+    vec : ndarray
+        vector [x, y]
+    Returns
+    -------
+    float
+        magnitude of vector"""
     return np.linalg.norm(vec)
 
 class Vector2d:
@@ -90,5 +134,5 @@ class Vector2d:
         vec = rot(self.numpy(), center.numpy(), angle)
         return Vector2d(int(vec[0]), int(vec[1]))
 
-    def show(self, gameDisplay):
-        pygame.draw.circle(gameDisplay, (0, 0, 0), (int(self.x), int(self.y)), 5, 1)
+    #def show(self, gameDisplay):
+    #    pygame.draw.circle(gameDisplay, (0, 0, 0), (int(self.x), int(self.y)), 5, 1)

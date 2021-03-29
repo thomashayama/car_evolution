@@ -2,6 +2,7 @@ import pygame
 import math
 import roads
 from car_ai_instance import *
+from car_ai_utils import *
 import random
 import numpy as np
 import torch
@@ -10,27 +11,11 @@ import os
 
 pygame.init()
 
-gray = (100, 100, 100)
-white = (255, 255, 255)
-black = (0, 0, 0)
-red = (255, 100, 100)
-green = (100, 255, 100)
-
-class dataloader:
-    def __init__(self, data, flip_every=-1):
-        self.flip_every = flip_every
-        self.data = data
-        self.counter = 0
-        self.curr_data = 0
-
-    def step(self):
-        self.counter += 1
-        if self.counter >= self.flip_every:
-            self.counter = 0
-            self.curr_data = (self.curr_data + 1) % len(self.data)
-
-    def get_data(self):
-        return self.data[self.curr_data]
+GRAY = (100, 100, 100)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 100, 100)
+GREEN = (100, 255, 100)
 
 if __name__== "__main__":
     display_width = 800
@@ -93,7 +78,6 @@ if __name__== "__main__":
             agent.brain = torch.load(dir + '/' + files[gen])['model']
             print('Showing:', files[gen])
             data.step()
-
 
         text1 = font.render('gen ' + str(gen), True, white)
         text2 = font.render('score: ' + str(round(agent.score)), True, white)

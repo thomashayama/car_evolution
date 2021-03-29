@@ -6,6 +6,18 @@ import numpy as np
 
 @njit
 def seg_cross_seg(l1, l2):
+    """Determines if 2 line segments are crossing
+
+    Parameters
+    ----------
+    l1 : ndarray
+        A line segment vector (2x2)
+    l2 : ndarray
+        A line segment vector (2x2)
+    Returns
+    -------
+    boolean
+        Whether or not the two line segments cross"""
     # Precompute the relative vectors.
     (ux, uy) = (l1[1,0]-l1[0,0], l1[1,1]-l1[0,1])
     (vx, vy) = (l2[1,0]-l2[0,0], l2[1,1]-l2[0,1])
@@ -24,10 +36,32 @@ def seg_cross_seg(l1, l2):
 
 @njit
 def seg_midpoint(l1):
+    """Determines the midpoint of a given line segment
+
+    Parameters
+    ----------
+    l1 : ndarray
+        A line segment vector (2x2)
+    Returns
+    -------
+    ndarray
+        a point as [x, y]"""
     return (l1[0] + l1[1])/2
 
 @njit
 def seg_get_line(l1):
+    """Returns the slope and intercept of the given segment
+
+    Parameters
+    ----------
+    l1 : ndarray
+        A line segment vector (2x2)
+    Returns
+    -------
+    float
+        slope of the line
+    float
+        y intercept of the line"""
     if l1[0][0] - l1[1][0] == 0:
         slope = 99999
     else:
@@ -37,6 +71,18 @@ def seg_get_line(l1):
 
 @njit
 def seg_intersection(l1, l2):
+    """Returns the point of intersection between two lines
+
+    Parameters
+    ----------
+    l1 : ndarray
+        A line segment vector (2x2)
+    l2 : ndarray
+        A line segment vector (2x2)
+    Returns
+    -------
+    ndarray
+        intersection point [x, y]"""
     m1, b1 = seg_get_line(l1)
     m2, b2 = seg_get_line(l2)
 
@@ -58,9 +104,6 @@ def seg_intersection(l1, l2):
     return np.array([x, y])
 
 
-def seg_show(gameDisplay, seg, color=(255, 100, 100)):
-    pygame.draw.line(gameDisplay, color, (seg[0, 0], seg[0, 1]),
-                     (seg[1, 0], seg[1, 1]))
 
 class Line_seg:
     def __init__(self, *args):
